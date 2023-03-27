@@ -67,7 +67,7 @@ export default function App() {
             setUsuarios((oldArray) => [...oldArray, data].reverse());
           });
 
-          setLoading(false);
+          setLoading(true);
         });
     }
 
