@@ -7,6 +7,7 @@ import {
   StyleSheet,
   Button,
   FlatList,
+  ActivityIndicator,
 } from "react-native";
 import { firebase } from "./src/firebaseConnection";
 
@@ -14,9 +15,10 @@ console.disableYellowBox = true; //para retirar o aviso de warning
 
 export default function App() {
   const [nome, setNome] = useState("");
-  // const [idade, setIdade] = useState("");
+  const [idade, setIdade] = useState("");
   const [cargo, setCargo] = useState("");
   const [usuarios, setUsuarios] = useState([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     async function dados() {
@@ -52,14 +54,20 @@ export default function App() {
         .database()
         .ref("usuarios")
         .on("value", (snapshot) => {
+          setUsuarios([]);
+
           snapshot.forEach((chilItem) => {
             let data = {
               key: chilItem.key,
               nome: chilItem.val().nome,
               cargo: chilItem.val().cargo,
             };
-            setUsuarios([...usuarios, data]);
+
+            // setUsuarios([...usuarios, data]); //Dessa forma ele só retornará o último usuário
+            setUsuarios((oldArray) => [...oldArray, data].reverse());
           });
+
+          setLoading(false);
         });
     }
 
@@ -105,11 +113,16 @@ export default function App() {
       />
 
       <Button title="Novo Funcinário" onPress={cadastrar} />
-      <FlatList
-        keyExtractor={(item) => item.key}
-        data={usuarios}
-        renderItem={({ item }) => <Listagem data={item} />}
-      />
+
+      {loading ? (
+        <ActivityIndicator color={"#121212"} size={45} />
+      ) : (
+        <FlatList
+          keyExtractor={(item) => item.key}
+          data={usuarios}
+          renderItem={({ item }) => <Listagem data={item} />}
+        />
+      )}
     </View>
   );
 }
